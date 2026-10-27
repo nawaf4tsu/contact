@@ -50,6 +50,9 @@ main{padding:40px clamp(18px,4vw,56px) 80px;max-width:920px;width:100%}
 .chk:hover{border-color:var(--blue)}
 .chk:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .row.done .chk{background:var(--blue);border-color:var(--blue);color:#fff}
+.today{font:700 10px "Figtree",sans-serif;font-style:normal;text-transform:uppercase;letter-spacing:.5px;background:var(--lime);color:var(--ink);padding:2px 7px;border-radius:99px;margin-left:8px;vertical-align:middle}
+.day.on .today{background:var(--ink);color:var(--lime)}
+.rest{background:var(--blue-soft);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:22px;font-weight:500}
 .notes{background:var(--lime);border-radius:16px;padding:20px 24px}
 .notes h3{font:800 17px 'Outfit',sans-serif;margin-bottom:6px}
 .notes li{margin-left:18px;font-size:14px;padding:2px 0}
@@ -150,6 +153,8 @@ const DAYS=[
  n:["Abs recover quickly, so you can add a short core finisher to other days if you like.","Use this day as your lighter session to recover."]}
 ];
 
+const wd=new Date().getDay();            // 0 = Sunday, 1 = Monday ... 6 = Saturday
+const todayIdx=wd===0?-1:wd-1;             // Monday -> Day 1 ... Saturday -> Day 6
 const nav=document.getElementById('nav'),main=document.getElementById('main');
 let cur=0,done={};
 try{done=JSON.parse(localStorage.getItem('ironweek')||'{}')}catch(e){}
@@ -168,19 +173,19 @@ function progress(){
  document.getElementById('pl').textContent=`${c} of ${t} exercises done`;
 }
 function tog(k){done[k]=!done[k];save();const el=document.querySelector(`[data-k="${k}"]`);el.classList.toggle('done',!!done[k]);progress()}
-function show(i){
+function show(i,rest){
  cur=i;const d=DAYS[i];
  [...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
  let ex=0,sets=0;d.g.forEach(([g,l])=>l.forEach(e=>{ex++;sets+=parseInt(e[1])||0}));
- main.innerHTML=`<div class="top"><small>Day ${i+1} · ${d.k}</small><h1>${d.t}</h1></div>
+ main.innerHTML=(rest?`<div class="rest">Sunday is your rest day. Here is Monday's workout to get ready.</div>`:'')+`<div class="top"><small>${i===todayIdx?'Today · ':''}Day ${i+1} · ${d.k}</small><h1>${d.t}</h1></div>
  <div class="stats"><div class="stat"><b>${ex}</b><span>exercises</span></div><div class="stat"><b>${sets}</b><span>total sets</span></div><div class="stat"><b>~${Math.round(sets*2.5)}</b><span>minutes</span></div></div>
  <div class="prog"><div id="bar"></div></div><p class="plabel" id="pl"></p>`+
  d.g.map(([g,l],gi)=>`<section class="grp"><h2>${g}<em>${l.length} exercises</em></h2>${l.map((e,ei)=>row(e,key(i,gi,ei))).join('')}</section>`).join('')+
  (d.n.length?`<div class="notes"><h3>Notes</h3><ul>${d.n.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:'');
  progress();window.scrollTo({top:0,behavior:'smooth'});
 }
-DAYS.forEach((d,i)=>{const b=document.createElement('button');b.className='day';b.innerHTML=`<i>${i+1}</i><span>${d.t}<small>${d.k}</small></span>`;b.onclick=()=>show(i);nav.appendChild(b)});
-show(0);
+DAYS.forEach((d,i)=>{const b=document.createElement('button');b.className='day';b.innerHTML=`<i>${i+1}</i><span>${d.t}${i===todayIdx?'<em class="today">Today</em>':''}<small>${d.k}</small></span>`;b.onclick=()=>show(i);nav.appendChild(b)});
+show(todayIdx<0?0:todayIdx,todayIdx<0);
 </script>
 </body>
 </html>
