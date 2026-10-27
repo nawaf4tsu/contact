@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1b3d">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Iron Week — 6 Day Workout Plan</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -75,7 +80,7 @@ main{padding:40px clamp(18px,4vw,56px) 80px;max-width:920px;width:100%}
 <body>
 <div class="app">
  <aside>
-  <div class="brand">IRON<b>WEEK</b></div>
+  <div class="brand">CORE<b>WEEK</b></div>
   <p class="sub">6-day body-part split for strength and muscle</p>
   <nav class="days" id="nav" aria-label="Workout days"></nav>
  </aside>
@@ -186,6 +191,7 @@ function show(i,rest){
 }
 DAYS.forEach((d,i)=>{const b=document.createElement('button');b.className='day';b.innerHTML=`<i>${i+1}</i><span>${d.t}${i===todayIdx?'<em class="today">Today</em>':''}<small>${d.k}</small></span>`;b.onclick=()=>show(i);nav.appendChild(b)});
 show(todayIdx<0?0:todayIdx,todayIdx<0);
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")){navigator.serviceWorker.register("sw.js").catch(()=>{})}
 </script>
 </body>
 </html>
