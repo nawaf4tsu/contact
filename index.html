@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f1b3d">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Iron Week">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Iron Week — 6 Day Workout Plan</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
@@ -76,9 +78,31 @@ main{padding:40px clamp(18px,4vw,56px) 80px;max-width:920px;width:100%}
  .thumb{width:96px;height:84px}
  .tip{display:none}
 }
+
+/* ---- App feel ---- */
+html{overscroll-behavior-y:contain;-webkit-text-size-adjust:100%}
+html,body{-webkit-tap-highlight-color:transparent}
+*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{touch-action:manipulation;overflow-x:hidden}
+img{-webkit-user-drag:none;user-drag:none;pointer-events:none}
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-appearance:none;appearance:none;outline:none}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.day:focus-visible{outline:none}
+button:active{transform:scale(.97)}
+.day,.chk{transition:transform .12s,background .2s}
+main{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+aside{padding-top:calc(32px + env(safe-area-inset-top,0px))}
+@media(max-width:820px){aside{padding-top:calc(20px + env(safe-area-inset-top,0px))}}
+main>*{animation:rise .3s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#ptr{position:fixed;top:calc(env(safe-area-inset-top,0px) + 6px);left:50%;width:42px;height:42px;margin-left:-21px;border-radius:50%;background:#fff;color:var(--blue);box-shadow:0 4px 14px rgba(15,27,61,.25);display:grid;place-items:center;z-index:1000;opacity:0;transform:translateY(-70px);pointer-events:none}
+#ptr svg{width:24px;height:24px}
+#ptr.spin svg{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
+<div id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="44 100"/></svg></div>
 <div class="app">
  <aside>
   <div class="brand">IRON<b>WEEK</b></div>
@@ -197,8 +221,44 @@ function show(i,rest){
 }
 DAYS.forEach((d,i)=>{const b=document.createElement('button');b.className='day';b.innerHTML=`<i>${i+1}</i><span>${d.t}${i===todayIdx?'<em class="today">Today</em>':''}<small>${d.k}</small></span>`;b.onclick=()=>show(i);nav.appendChild(b)});
 show(todayIdx<0?0:todayIdx,todayIdx<0);
+
+// ---- App behaviour: no copy / long-press menu, pull down to refresh ----
+["contextmenu","selectstart","dragstart"].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
+(function(){
+ const ptr=document.getElementById("ptr"),svg=ptr.firstElementChild,app=document.querySelector(".app");
+ const MAX=120,TH=75;let sy=0,dy=0,pull=false,busy=false;
+ const top=()=>(window.pageYOffset||document.documentElement.scrollTop||0)<=0;
+ function set(y,anim){
+  const t=anim?"transform .25s ease, opacity .25s":"none";
+  ptr.style.transition=t;app.style.transition=anim?"transform .25s ease":"none";
+  ptr.style.opacity=Math.min(1,y/(TH*.7));
+  ptr.style.transform="translateY("+(y-70)+"px)";
+  if(!busy)svg.style.transform="rotate("+(y*4)+"deg)";
+  app.style.transform=y?"translateY("+y*.55+"px)":"";
+ }
+ addEventListener("touchstart",e=>{
+  if(busy||e.touches.length!==1||!top()){pull=false;return}
+  sy=e.touches[0].clientY;dy=0;pull=true;
+ },{passive:true});
+ addEventListener("touchmove",e=>{
+  if(!pull||busy)return;
+  const d=e.touches[0].clientY-sy;
+  if(d<=0||!top()){if(dy>0){dy=0;set(0,true)}if(d<0)pull=false;return}
+  if(e.cancelable)e.preventDefault();
+  dy=Math.min(MAX,d*.5);set(dy,false);
+ },{passive:false});
+ function end(){
+  if(!pull||busy)return;pull=false;
+  if(dy>=TH){
+   busy=true;ptr.classList.add("spin");svg.style.transform="";set(TH*.8,true);
+   setTimeout(()=>location.reload(),900);
+  }else{set(0,true)}
+  dy=0;
+ }
+ addEventListener("touchend",end,{passive:true});
+ addEventListener("touchcancel",end,{passive:true});
+})();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){navigator.serviceWorker.register("sw.js").catch(()=>{})}
 </script>
 </body>
- </html>
- 
+</html>
