@@ -1,13 +1,13 @@
 {
-  "name": "Iron Week \u2014 6 Day Workout Plan",
+  "name": "Iron Week — 6 Day Workout Plan",
   "short_name": "Iron Week",
   "description": "6-day body-part workout split with daily plan.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f1b3d",
-  "theme_color": "#0f1b3d",
+  "background_color": "#0A0A0A",
+  "theme_color": "#FF6A00",
   "icons": [
     {
       "src": "icon-192.png",
